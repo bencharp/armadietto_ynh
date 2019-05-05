@@ -172,6 +172,7 @@ npm -g i armadietto
 #=================================================
 # SECURE FILES AND DIRECTORIES
 #=================================================
+ynh_script_progression --message="Secure files and directories" --time --weight=1
 
 # Set permissions to app files
 chown -R $app:$app "$final_path"
@@ -187,10 +188,10 @@ yunohost service add $app --description "$app daemon" -t systemd
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-ynh_script_progression --message="Configuring fail2ban..." --time --weight=1
+# ynh_script_progression --message="Configuring fail2ban..." --time --weight=1
 
-# Create a dedicated fail2ban config
-ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
+# # Create a dedicated fail2ban config
+# ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
 
 
 #=================================================

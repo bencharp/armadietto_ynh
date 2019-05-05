@@ -11,7 +11,7 @@
 		language="fr"
 		is_public=1	(PUBLIC|public=1|private=0)
 		is_signup=0	(SIGNUP|allow=1|deny=0)
-		port="8888"	(PORT)
+		port="8008"	(PORT)
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1
