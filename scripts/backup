@@ -6,7 +6,8 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-source _common.sh
+#Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
+source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -19,49 +20,71 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
-final_path=$(ynh_app_setting_get $app final_path)
-domain=$(ynh_app_setting_get $app domain)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
 
 #=================================================
 # STANDARD BACKUP STEPS
 #=================================================
 # BACKUP THE APP MAIN DIR
 #=================================================
+ynh_script_progression --message="Backing up the main app directory..." --time --weight=1
 
-ynh_backup "$final_path"
+ynh_backup --src_path="$final_path"
+
+#=================================================
+# BACKUP DATADIR DIRECTORY
+#=================================================
+ynh_script_progression --message="Backing up the datadir directory..." --time --weight=1
+
+ynh_backup --src_path="/home/yunohost.app/$app"
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Backing up nginx web server configuration..." --time --weight=1
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP THE NODE SERVER CONFIGURATION
 #=================================================
+ynh_script_progression --message="Backing up node server configuration..." --time --weight=1
 
-ynh_backup "$final_path/server.js"
+ynh_backup --src_path="$final_path/server.js"
+
+#=================================================
+# BACKUP FAIL2BAN CONFIGURATION
+#=================================================
+ynh_script_progression --message="Backing up fail2ban configuration" --time --weight=1
+
+ynh_backup "/etc/fail2ban/jail.d/$app.conf"
+ynh_backup "/etc/fail2ban/filter.d/$app.conf"
 
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
 # BACKUP LOGROTATE
 #=================================================
+ynh_script_progression --message="Backing up logrotate configuration..." --time --weight=1
 
-ynh_backup "/etc/logrotate.d/$app"
-
-#=================================================
-# BACKUP DATADIR DIRECTORY
-#=================================================
-
-ynh_backup "/home/yunohost.app/$app"
+ynh_backup --src_path="/etc/logrotate.d/$app"
 
 #=================================================
 # BACKUP SYSTEMD
 #=================================================
+ynh_script_progression --message="Backing up systemd configuration..." --time --weight=1
 
-ynh_backup "/etc/systemd/system/$app.service"
+ynh_backup --src_path="/etc/systemd/system/$app.service"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)." --time --last
+
 
