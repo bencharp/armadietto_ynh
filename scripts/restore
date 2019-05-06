@@ -83,15 +83,6 @@ chmod 0700 $datadir && chown $app:$app $datadir
 ynh_restore_file --origin_path="$final_path/server.js"
 
 #=================================================
-# RESTORE FAIL2BAN CONFIGURATION
-#=================================================
-# ynh_script_progression --message="Restoring the fail2ban configuration..." --time --weight=1
-
-# ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
-# ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
-# ynh_systemd_action --action=restart --service_name=fail2ban
-
-#=================================================
 # RESTORE SYSTEMD
 #=================================================
 ynh_script_progression --message="Restoring the systemd configuration..." --time --weight=1
