@@ -7,7 +7,7 @@
         "fr": "Armadietto est un serveur remoteStorage écrit pour node.js."
     },
     "version": "0.1.0",
-    "url": "",
+    "url": "https://github.com/bencharp/armadietto_ynh",
     "license": "WTFPL",
     "maintainer": {
         "name": "bencharp",
