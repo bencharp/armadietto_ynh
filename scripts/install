@@ -109,7 +109,7 @@ ynh_add_nginx_config
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Configuring system user ..." --time --weight=1
+ynh_script_progression --message="Configuring system user..." --time --weight=1
 
 # Create a system user
 ynh_system_user_create --username=$app
@@ -119,11 +119,11 @@ ynh_system_user_create --username=$app
 #=================================================
 # ADD SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Configuring a systemd service ..." --time --weight=1
+ynh_script_progression --message="Configuring a systemd service..." --time --weight=1
 
-ynh_replace_string "__NODEJS_PATH__" "$nodejs_path"   "../conf/systemd.service"
-ynh_replace_string "__ENV_PATH__" "$PATH"             "../conf/systemd.service"
-ynh_replace_string "__FINALPATH__" "$final_path"      "../conf/systemd.service"
+ynh_replace_string --match_string="__NODEJS_PATH__"	--replace_string="$nodejs_path"	--target_file="../conf/systemd.service"
+ynh_replace_string --match_string="__ENV_PATH__"	--replace_string="$PATH"		--target_file="../conf/systemd.service"
+ynh_replace_string --match_string="__FINALPATH__"	--replace_string="$final_path"	--target_file="../conf/systemd.service"
 
 ynh_add_systemd_config
 
@@ -145,11 +145,12 @@ mkdir -p "$datadir"
 
 cp -f ../conf/server.js "$final_path/server.js"
 
-ynh_replace_string "__MODULE_PATH__"    "$modulepath"   "$final_path/server.js"
-ynh_replace_string "__DATADIR__"        "$datadir"      "$final_path/server.js"
-ynh_replace_string "__PORT__"           "$port"         "$final_path/server.js"
-ynh_replace_string "__DOMAIN__"         "$domain"       "$final_path/server.js"
-ynh_replace_string "__SIGNUP__"         "$is_signup"    "$final_path/server.js"
+ynh_replace_string --match_string="__MODULE_PATH__"	--replace_string="$modulepath"	--target_file="$final_path/server.js"
+ynh_replace_string --match_string="__DATADIR__"		--replace_string="$datadir"		--target_file="$final_path/server.js"
+ynh_replace_string --match_string="__PORT__"		--replace_string="$port"		--target_file="$final_path/server.js"
+ynh_replace_string --match_string="__DOMAIN__"		--replace_string="$domain"		--target_file="$final_path/server.js"
+ynh_replace_string --match_string="__SIGNUP__"		--replace_string="$is_signup"	--target_file="$final_path/server.js"
+
 
 #=================================================
 # STORE CONFIG FILES CHECKSUM
@@ -162,8 +163,8 @@ ynh_store_file_checksum --file="$final_path/server.js"
 # INSTALL ARMADIETTO
 #=================================================
 ynh_script_progression --message="Install armadietto with npm ..." --time --weight=1
-ynh_use_nodejs
 
+ynh_use_nodejs
 cd $final_path
 npm -g i armadietto
 
