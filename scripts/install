@@ -132,7 +132,7 @@ ynh_add_systemd_config
 #=================================================
 # DEFINE ARMADIETTO OPTIONS & CREATE DIRECTORY FOR DATA
 #=================================================
-ynh_script_progression --message="Configuring armadietto options ..." --time --weight=1
+ynh_script_progression --message="Configuring armadietto options..." --time --weight=1
 
 # Define armadietto module path
 modulepath="$node_version_path/$nodejs_version/lib/node_modules/armadietto/lib"
@@ -162,11 +162,13 @@ ynh_store_file_checksum --file="$final_path/server.js"
 #=================================================
 # INSTALL ARMADIETTO
 #=================================================
-ynh_script_progression --message="Install armadietto with npm ..." --time --weight=1
+ynh_script_progression --message="Install armadietto with npm..." --time --weight=1
 
 ynh_use_nodejs
 cd $final_path
 npm -g i armadietto
+
+ynh_script_progression --message="Armadietto installed..." --time --weight=1
 
 #=================================================
 # GENERIC FINALIZATION
@@ -203,7 +205,7 @@ fi
 #=================================================
 ynh_script_progression --message="Reloading nginx web server..."  --time --weight=1
 
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemd_action --service_name=nginx --action=reload 
 
 #=================================================
 # START ARMADIETTO
