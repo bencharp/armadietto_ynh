@@ -19,6 +19,8 @@
 		setup_nourl=1
 		setup_private=1
 		setup_public=1
+		setup_allow=1
+		setup_deny=1
 		upgrade=1
 		upgrade=1	from_commit=CommitHash
 		backup_restore=1
