@@ -87,6 +87,9 @@ nodejs_version=10
 
 ynh_install_nodejs -n $nodejs_version
 
+#sleep required on low spec like raspberryPi
+sleep 2s
+
 #=================================================
 # CHECK AND CREATE FINAL_PATH
 #=================================================
@@ -167,6 +170,9 @@ ynh_script_progression --message="Install armadietto with npm..." --time --weigh
 ynh_use_nodejs
 cd $final_path
 npm -g i armadietto
+
+#sleep required on low spec like raspberryPi
+sleep 2s
 
 ynh_script_progression --message="Armadietto installed..." --time --weight=1
 
