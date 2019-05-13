@@ -77,6 +77,17 @@ chown -R $app:$app "$final_path"
 chmod 0700 $datadir && chown $app:$app $datadir
 
 #=================================================
+# RESTORE FAIL2BAN CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the fail2ban configuration..." --time --weight=1
+
+ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
+ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
+ynh_systemd_action --action=restart --service_name=fail2ban
+
+#=================================================
+# SPECIFIC RESTORATION
+#=================================================
 # RESTORE THE NODE SERVER CONFIGURATION
 #=================================================
 
@@ -95,6 +106,13 @@ systemctl enable $app.service
 #=================================================
 
 yunohost service add $app --log "/var/log/$app/$app.log"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..." --time --weight=1
+
+ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # RESTORE THE LOGROTATE CONFIGURATION

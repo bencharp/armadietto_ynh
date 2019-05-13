@@ -58,13 +58,13 @@
             {
                 "name": "is_signup",
                 "type": "boolean",
-                "help": {
-                    "en": "Would you like to allow visitors to register and create an account?",
-                    "fr": "Souhaitez-vous autoriser les visiteurs à s'inscrire et créer un compte ?"
-                },
                 "ask": {
 					"en": "Allow signups?",
 					"fr": "Accepter les inscriptions ?"
+                },
+                "help": {
+                    "en": "Would you like to allow visitors to register and create an account?",
+                    "fr": "Souhaitez-vous autoriser les visiteurs à s'inscrire et créer un compte ?"
                 },
                 "default": false
             }
