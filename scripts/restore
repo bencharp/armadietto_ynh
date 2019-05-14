@@ -79,11 +79,11 @@ chmod 0700 $datadir && chown $app:$app $datadir
 #=================================================
 # RESTORE FAIL2BAN CONFIGURATION
 #=================================================
-ynh_script_progression --message="Restoring the fail2ban configuration..." --time --weight=1
+#### ynh_script_progression --message="Restoring the fail2ban configuration..." --time --weight=1
 
-ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
-ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
-ynh_systemd_action --action=restart --service_name=fail2ban
+#### ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
+#### ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
+#### ynh_systemd_action --action=restart --service_name=fail2ban
 
 #=================================================
 # SPECIFIC RESTORATION
