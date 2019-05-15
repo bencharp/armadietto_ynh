@@ -88,6 +88,15 @@ chmod 0700 $datadir && chown $app:$app $datadir
 #=================================================
 # SPECIFIC RESTORATION
 #=================================================
+# RESTORE DATA STORAGE DIRECTORY
+#=================================================
+ynh_script_progression --message="Restoring the data storage directory..." --time --weight=1
+
+ynh_restore_file --src_path="/home/yunohost.app/${app}/storage"
+
+#=================================================
+# SPECIFIC RESTORATION
+#=================================================
 # RESTORE THE NODE SERVER CONFIGURATION
 #=================================================
 
