@@ -80,6 +80,32 @@ ynh_abort_if_errors
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Stopping a systemd service..." --time --weight=1
+
+ynh_systemd_action --service_name=$app --action=stop --log_path="/var/log/$app/$app.log"
+
+#=================================================
+# STOP ARMADIETTO
+#=================================================
+ynh_script_progression --message="Stop armadietto web server..."  --time --weight=1
+
+ynh_systemd_action --service_name=$app --action=stop
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+
+if [ "$upgrade_type" == "UPGRADE_APP" ]
+then
+	ynh_script_progression --message="Upgrading source files..." --time --weight=1
+
+	# Download, check integrity, uncompress and patch the source from app.src
+	ynh_setup_source --dest_dir="$final_path"
+fi
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Upgrading nginx web server configuration..." --time --weight=1
@@ -88,13 +114,13 @@ ynh_script_progression --message="Upgrading nginx web server configuration..." -
 ynh_add_nginx_config
 
 #=================================================
-# UPGRADE DEPENDENCIES
+# UPGRADE NODEJS
 #=================================================
-# ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
+ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
 
 nodejs_version=10
 
-# ynh_install_nodejs -n $nodejs_version
+ynh_install_nodejs -n $nodejs_version
 
 #=================================================
 # CREATE DEDICATED USER
@@ -117,6 +143,10 @@ ynh_system_user_create --username=$app
 # ...
 #=================================================
 
+#=================================================
+# STORE THE CONFIG FILE CHECKSUM
+#=================================================
+
 ### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
 ### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
 ynh_backup_if_checksum_is_different --file="$final_path/CONFIG_FILE"
@@ -124,32 +154,22 @@ ynh_backup_if_checksum_is_different --file="$final_path/CONFIG_FILE"
 ynh_store_file_checksum --file="$final_path/CONFIG_FILE"
 
 #=================================================
-# STOP ARMADIETTO
+# UPGRADE ARMADIETTO
 #=================================================
+ynh_script_progression --message="Uninstall an re-install armadietto with npm..." --time --weight=1
 
+ynh_use_nodejs
+cd $final_path
+#Uninstall armadietto
+npm -g un armadietto
+#Reinstall armadietto
+npm -g i armadietto
 
+#sleep required on low spec like raspberryPi
+sleep 2s
 
-#=================================================
-# SETUP LOGROTATE
-#=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+ynh_script_progression --message="Armadietto installed..." --time --weight=1
 
-# Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate --non-append
-
-#=================================================
-# SETUP SYSTEMD
-#=================================================
-ynh_script_progression --message="Upgrading systemd configuration..." --time --weight=1
-
-# Create a dedicated systemd config
-ynh_replace_string "__NODEPATH__" "$nodejs_path"      "../conf/systemd.service"
-ynh_replace_string "__ENV_PATH__" "$PATH"             "../conf/systemd.service"
-ynh_replace_string "__FINALPATH__" "$final_path"      "../conf/systemd.service"
-
-ynh_add_systemd_config
-
-PATH=$nodejs_path:$PATH
 
 #=================================================
 # SETUP ARMADIETTO OPTIONS & CREATE DIRECTORY FOR DATA
@@ -173,8 +193,33 @@ ynh_replace_string "__PORT__"           "$port"   "../conf/server.js"
 
 cp ../conf/server.js "$final_path/server.js"
 
+
+#=================================================
+# SETUP LOGROTATE
+#=================================================
+ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+
+# Use logrotate to manage app-specific logfile(s)
+ynh_use_logrotate --non-append
+
+#=================================================
+# SETUP SYSTEMD
+#=================================================
+ynh_script_progression --message="Upgrading systemd configuration..." --time --weight=1
+
+# Create a dedicated systemd config
+ynh_add_systemd_config
+
 #=================================================
 # GENERIC FINALIZATION
+#=================================================
+# UPGRADE FAIL2BAN
+#=================================================
+#### ynh_script_progression --message="Reconfiguring fail2ban..." --time --weight=1
+
+# Create a dedicated fail2ban config
+#### ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
+
 #=================================================
 # SECURE FILES AND DIRECTORIES
 #=================================================
@@ -196,16 +241,23 @@ then
 fi
 
 #=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..." --time --weight=1
+
+ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
+
+#=================================================
 # RELOAD NGINX
 #=================================================
 ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
 
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemd_action --service_name=nginx --action=reload 
 
 #=================================================
 # START ARMADIETTO
 #=================================================
-ynh_script_progression --message="Start armadietto web server..."  --time --weight=1
+ynh_script_progression --message="Start armadietto web server..." --time --weight=1
 
 ynh_systemd_action --service_name=$app --action=start
 
