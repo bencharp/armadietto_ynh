@@ -13,9 +13,6 @@ source /usr/share/yunohost/helpers
 # MANAGE SCRIPT FAILURE
 #=================================================
 
-ynh_clean_setup () {
-	ynh_clean_check_starting
-}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
@@ -38,9 +35,7 @@ ynh_script_progression --message="Validating installation parameters..." --time 
 final_path=/opt/yunohost/$app
 test ! -e "$final_path" || ynh_die "This path already contains a folder"
 
-# Normalize the url path syntax
-path_url=$(ynh_normalize_url_path $path_url)
-
+# Only on / directory
 if [ "$path_url" != "/" ]; then
     ynh_die "Only / is allowed"
 fi
@@ -55,11 +50,6 @@ ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 #=================================================
 ynh_script_progression --message="Storing installation settings..." --time --weight=1
 
-ynh_app_setting_set $app domain "$domain"
-ynh_app_setting_set $app path "$path_url"
-ynh_app_setting_set $app is_public "$is_public"
-ynh_app_setting_set $app is_signup "$is_signup"
-
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=is_public --value=$is_public
@@ -73,13 +63,13 @@ ynh_app_setting_set --app=$app --key=is_signup --value=$is_signup
 ynh_script_progression --message="Configuring firewall ..." --time --weight=1
 
 # Find a free port
-port=$(ynh_find_port 8008)
+port=$(ynh_find_port --port=8008)
 # Open this port
 ynh_exec_warn_less yunohost firewall allow --no-upnp TCP $port
 ynh_app_setting_set --app=$app --key=port --value=$port
 
 #=================================================
-# INSTALL DEPENDENCIES
+# INSTALL NODEJS
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --time --weight=1
 
@@ -87,9 +77,13 @@ nodejs_version=10
 
 ynh_install_nodejs -n $nodejs_version
 
+#sleep required on low spec like raspberryPi
+sleep 2s
+
 #=================================================
 # CHECK AND CREATE FINAL_PATH
 #=================================================
+ynh_script_progression --message="Setting up and create final app path..." --time --weight=1
 
 ynh_app_setting_set $app final_path $final_path
 # Download, check integrity, uncompress and patch the source from app.src
@@ -115,9 +109,7 @@ ynh_script_progression --message="Configuring system user..." --time --weight=1
 ynh_system_user_create --username=$app
 
 #=================================================
-# SPECIFIC SETUP
-#=================================================
-# ADD SYSTEMD SERVICE
+# SETUP SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Configuring a systemd service..." --time --weight=1
 
@@ -132,7 +124,7 @@ ynh_add_systemd_config
 #=================================================
 # DEFINE ARMADIETTO OPTIONS & CREATE DIRECTORY FOR DATA
 #=================================================
-ynh_script_progression --message="Configuring armadietto options ..." --time --weight=1
+ynh_script_progression --message="Configuring armadietto options..." --time --weight=1
 
 # Define armadietto module path
 modulepath="$node_version_path/$nodejs_version/lib/node_modules/armadietto/lib"
@@ -162,11 +154,16 @@ ynh_store_file_checksum --file="$final_path/server.js"
 #=================================================
 # INSTALL ARMADIETTO
 #=================================================
-ynh_script_progression --message="Install armadietto with npm ..." --time --weight=1
+ynh_script_progression --message="Install armadietto with npm..." --time --weight=1
 
 ynh_use_nodejs
 cd $final_path
 npm -g i armadietto
+
+#sleep required on low spec like raspberryPi
+sleep 2s
+
+ynh_script_progression --message="Armadietto installed..." --time --weight=1
 
 #=================================================
 # GENERIC FINALIZATION
@@ -180,8 +177,9 @@ chown -R $app:$app "$final_path"
 chmod 0700 $datadir && chown $app:$app $datadir
 
 #=================================================
-# ADD SERVICE IN ADMIN PANEL
+# ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
+ynh_script_progression --message="Starting a systemd service..." --time --weight=1
 
 # if using yunohost version 3.2 or more in the 'manifest.json', a description can be added
 yunohost service add $app --description "$app daemon" -t systemd
@@ -189,11 +187,10 @@ yunohost service add $app --description "$app daemon" -t systemd
 #=================================================
 # SETUP FAIL2BAN
 #=================================================
-# ynh_script_progression --message="Configuring fail2ban..." --time --weight=1
+#### ynh_script_progression --message="Configuring fail2ban..." --time --weight=1
 
-# # Create a dedicated fail2ban config
-# ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
-
+# Create a dedicated fail2ban config
+#### ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
 
 #=================================================
 # SETUP SSOWAT
@@ -210,14 +207,14 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."  --time --weight=1
+ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
 
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemd_action --service_name=nginx --action=reload 
 
 #=================================================
 # START ARMADIETTO
 #=================================================
-ynh_script_progression --message="Start armadietto web server..."  --time --weight=1
+ynh_script_progression --message="Start armadietto web server..." --time --weight=1
 
 ynh_systemd_action --service_name=$app --action=start
 
