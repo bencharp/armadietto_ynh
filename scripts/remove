@@ -69,10 +69,10 @@ npm -g un armadietto
 #=================================================
 # REMOVE LOGROTATE CONFIGURATION
 #=================================================
-ynh_script_progression --message="Removing logrotate configuration..." --time --weight=1
+# ynh_script_progression --message="Removing logrotate configuration..." --time --weight=1
 
 # Remove the app-specific logrotate config
-ynh_remove_logrotate
+# ynh_remove_logrotate
 
 #=================================================
 # CLOSE A PORT
