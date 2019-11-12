@@ -12,7 +12,7 @@
     "maintainer": {
         "name": "bencharp",
         "email": "contact@bencharp.com",
-        "url": "https://www.bencharp.com"
+        "url": "https://github.com/bencharp"
     },
     "requirements": {
         "yunohost": ">= 3.5"
